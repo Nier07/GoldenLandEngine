@@ -1,5 +1,11 @@
 #pragma once
 
+//foward declaration
+//dont need to know what it does just that it exists as a struct
+struct SDL_Window;
+struct SDL_Renderer;
+class Texture;
+
 class Game {
 public:
 	// Get game singleton or create one if it doesnt exist
@@ -9,12 +15,21 @@ public:
 
 	void Run() { Initialise(); };
 
+	void QuitApp() { m_IsGameOpen = false; }
+
 private:
 	Game();
 	~Game();
 
 	// flag for ending game loop
 	bool m_IsGameOpen;
+
+	//stores the window and renderer for the game
+	SDL_Window* m_WindowRef;
+	SDL_Renderer* m_RendererRef;
+
+	//Debug Testing Vars
+	Texture* m_TestTexture1;
 
 	// Core Game Funcs
 	// init dependencies / libs, exit game on fail
