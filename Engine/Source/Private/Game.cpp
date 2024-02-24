@@ -1,8 +1,10 @@
 #include "Game.h"
-#include <iostream>
 #include "SDL2/SDL.h"
 #include "Debug.h"
 #include "Graphics/Texture.h"
+
+//DEBUG
+#include "Graphics/Animation.h"
 
 Game* Game::GetGame()
 {
@@ -18,6 +20,71 @@ void Game::DestroyGame()
 	delete GetGame();
 }
 
+Texture* Game::ImportTexture(const char* PathToFile)
+{
+	Texture* NewTexture = new Texture(m_RendererRef);
+
+	// loop through textures
+	for (Texture* TexRef : m_TextureStack) {
+		// check if texture has already been imported
+		if (std::strcmp(TexRef->GetPath(), PathToFile) == 0) {
+			//copy matched element if there is a matching path
+			NewTexture->CopyTexture(TexRef);
+			//add to texture stack
+			m_TextureStack.push_back(NewTexture);
+			//ignore rest of funciton on success
+			return NewTexture;
+		}
+	}
+
+	//attempt to import texture
+	if (!NewTexture->ImportTexture(PathToFile)) {
+		//if it failed delete and update new texture to null ptr
+		delete NewTexture;
+		NewTexture = nullptr;
+	}
+	else {
+		//if import was successful
+		m_TextureStack.push_back(NewTexture);
+	}
+	return NewTexture;
+}
+
+void Game::DestroyTexture(Texture* TextureToDestroy)
+{
+	int TexturesFound = 0;
+
+	//loop through textures
+	for (Texture* TexRef : m_TextureStack) {
+		//if texture has a matching path
+		if (std::strcmp(TextureToDestroy->GetPath(), TexRef->GetPath()) == 0) {
+			TexturesFound++;
+
+			if (TexturesFound > 1) {
+				break;
+			}
+		}
+	}
+
+	//if there is not a copy deallocate all memeory related to texture
+	if (TexturesFound <= 1) {
+		TextureToDestroy->CleanUp();
+	}
+
+	//find texture in array
+	auto it = std::find(m_TextureStack.begin(), m_TextureStack.end(), TextureToDestroy);
+	//if texture is found
+	if (it != m_TextureStack.end()) {
+		m_TextureStack.erase(it);
+	}
+
+	//remove texture object from memory
+	delete TextureToDestroy;
+	TextureToDestroy = nullptr;
+
+	GL_LOG("Game", "Texture has been destroyed");
+}
+
 Game::Game()
 {
 	printf("Game Created.\n");
@@ -27,7 +94,16 @@ Game::Game()
 	m_RendererRef = nullptr;
 
 	//Debug Vars
-	m_TestTexture1 = nullptr;
+	m_TestAnim1 = nullptr;
+	m_TestAnim2 = nullptr;
+	m_TestAnim3 = nullptr;
+	m_TestAnim4 = nullptr;
+	m_TestAnim5 = nullptr;
+	m_TestAnim6 = nullptr;
+	m_TestAnim7 = nullptr;
+	m_TestAnim8 = nullptr;
+	m_TestAnim9 = nullptr;
+	m_TestAnim10 = nullptr;
 }
 
 Game::~Game()
@@ -54,7 +130,7 @@ void Game::Start()
 	//launch game window
 
 	//create window and check if it failed
-	m_WindowRef = SDL_CreateWindow("Golden Land", // title
+	m_WindowRef = SDL_CreateWindow("Golden Land Engine", // title
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, // start pos
 		1280, 720, // res
 		0); // flags
@@ -79,17 +155,79 @@ void Game::Start()
 	}
 
 	//Debug
-	m_TestTexture1 = new Texture(m_RendererRef);
-	if (!m_TestTexture1->ImportTexture("Content/Letters/HRed.png")) {
-		m_TestTexture1->CleanUp();
-		delete m_TestTexture1;
-		m_TestTexture1 = nullptr;
-	}
-	else {
-		m_TestTexture1->m_PosX = 100.0f;
-		m_TestTexture1->m_PosY = 200.0f;
-		m_TestTexture1->m_Angle = 69.0f;
-	}
+	AnimationParams SheildAnimParams(24, 12, 11, 64, 64);
+	AnimationParams EngineAnimParams(24, 4, 3, 48, 48);
+	AnimationParams AutoCannonAnimParams(24, 7, 6, 48, 48);
+	AnimationParams AutoCannonProjectileAnimParams(24, 4, 3, 32, 32);
+	AnimationParams BigSpaceGunAnimParams(24, 12, 11, 48, 48);
+	AnimationParams BigSpaceGunProjectileAnimParams(24, 10, 9, 32, 32);
+
+
+	m_TestAnim1 = new Animation();
+	m_TestAnim1->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Bases/PNGs/Main Ship - Base - Full health.png");
+
+	m_TestAnim1->SetPosition(640.0f, 360.0f);
+	m_TestAnim1->SetScale(1.25f);
+
+	m_TestAnim2 = new Animation();
+	m_TestAnim2->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Engines/PNGs/Main Ship - Engines - Big Pulse Engine.png");
+
+	m_TestAnim2->SetPosition(640.0f, 370.0f);
+
+	m_TestAnim3 = new Animation();
+	m_TestAnim3->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Auto Cannon.png",
+		&AutoCannonAnimParams);
+
+	m_TestAnim3->SetPosition(640.0f, 350.0f);
+	m_TestAnim3->SetScale(1.25f);
+
+	m_TestAnim4 = new Animation();
+	m_TestAnim4->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
+		&BigSpaceGunAnimParams);
+
+	m_TestAnim4->SetPosition(600.0f, 370.0f);
+	m_TestAnim4->SetScale(1.25f);
+
+	m_TestAnim5 = new Animation();
+	m_TestAnim5->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
+		&BigSpaceGunAnimParams);
+
+	m_TestAnim5->SetPosition(680.0f, 370.0f);
+	m_TestAnim5->SetScale(1.25f);
+
+	m_TestAnim6 = new Animation();
+	m_TestAnim6->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png",
+		&BigSpaceGunProjectileAnimParams);
+
+	m_TestAnim6->SetPosition(680.0f, 330.0f);
+	m_TestAnim6->SetScale(1.25f);
+
+	m_TestAnim7 = new Animation();
+	m_TestAnim7->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png",
+		&BigSpaceGunProjectileAnimParams);
+
+	m_TestAnim7->SetPosition(600.0f, 330.0f);
+	m_TestAnim7->SetScale(1.25f);
+
+	m_TestAnim8 = new Animation();
+	m_TestAnim8->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png",
+		&AutoCannonProjectileAnimParams);
+
+	m_TestAnim8->SetPosition(640.0f, 300.0f);
+	m_TestAnim8->SetScale(1.25f);
+
+	m_TestAnim9 = new Animation();
+	m_TestAnim9->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Shields/PNGs/Main Ship - Shields - Round Shield.png",
+		&SheildAnimParams);
+
+	m_TestAnim9->SetPosition(640.0f, 360.0f);
+
+	m_TestAnim10 = new Animation();
+	m_TestAnim10->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Engine Effects/PNGs/Main Ship - Engines - Big Pulse Engine - Powering.png",
+		&EngineAnimParams);
+
+	m_TestAnim10->SetPosition(640.0f, 370.0f);
+
 
 	GameLoop();
 }
@@ -111,9 +249,9 @@ void Game::GameLoop()
 
 void Game::CleanUp()
 {
-	if (m_TestTexture1 != nullptr) {
-		m_TestTexture1->CleanUp();
-		delete m_TestTexture1;
+	//clean up and remove all textures from texture stack
+	for (int i = m_TextureStack.size() - 1; i > -1; i--) {
+		DestroyTexture(m_TextureStack[i]);
 	}
 
 	//does renderer exist
@@ -133,7 +271,7 @@ void Game::CleanUp()
 
 void Game::ProcessInput()
 {
-	// Data type to read STL input events for the window
+	//data type to read STL input events for the window
 	SDL_Event InputEvent;
 
 	//run through each input in the frame
@@ -147,14 +285,59 @@ void Game::ProcessInput()
 
 void Game::Update()
 {
+	//record previous frame time
+	static double LastTickTime = 0.0f;
+	//record current frame time
+	double CurrentTickTime = (double)SDL_GetTicks64();
+	//get delta time - how much time passed since the last frame 
+	double LongDelta = CurrentTickTime - LastTickTime;
+	//convert from ms to seconds
+	double DeltaTime = LongDelta / 1000.0f;
+	//set the last tick time
+	LastTickTime = CurrentTickTime;
+
+	static float i = 0.0f;
+	i += 0.1f;
+
 	//TODO: update game logic
-	static float Angle = 0.0f;
-
-	if (m_TestTexture1 != nullptr) {
-		m_TestTexture1->m_Angle = Angle;
+	if (m_TestAnim1 != nullptr) {
+		m_TestAnim1->SetPosition(640, 360 - i);
 	}
-
-	Angle += 0.1f;
+	if (m_TestAnim2 != nullptr) {
+		m_TestAnim2->SetPosition(640, 370 - i);
+	}
+	if (m_TestAnim3 != nullptr) {
+		m_TestAnim3->Update((float)DeltaTime);
+		m_TestAnim3->SetPosition(640, 350 - i);
+	}
+	if (m_TestAnim4 != nullptr) {
+		m_TestAnim4->Update((float)DeltaTime);
+		m_TestAnim4->SetPosition(600, 370 - i);
+	}
+	if (m_TestAnim5 != nullptr) {
+		m_TestAnim5->Update((float)DeltaTime);
+		m_TestAnim5->SetPosition(680, 370 - i);
+	}
+	if (m_TestAnim6 != nullptr) {
+		m_TestAnim6->Update((float)DeltaTime);
+		m_TestAnim6->SetPosition(680, 330 - 5 * i);
+	}
+	if (m_TestAnim7 != nullptr) {
+		m_TestAnim7->Update((float)DeltaTime);
+		m_TestAnim7->SetPosition(600, 330 - 5 * i);
+	}
+	if (m_TestAnim8 != nullptr) {
+		m_TestAnim8->Update((float)DeltaTime);
+		m_TestAnim8->SetPosition(640, 300 - 5 * i);
+	}
+	if (m_TestAnim9 != nullptr) {
+		m_TestAnim9->Update((float)DeltaTime);
+		m_TestAnim9->SetPosition(640, 360 - i);
+	}
+	if (m_TestAnim10 != nullptr) {
+		m_TestAnim10->Update((float)DeltaTime);
+		m_TestAnim10->SetPosition(640, 370 - i);
+	}
 }
 
 void Game::Render()
@@ -166,9 +349,12 @@ void Game::Render()
 	SDL_RenderClear(m_RendererRef);
 
 	//Render Custom Graphics
-	if (m_TestTexture1 != nullptr) {
-		m_TestTexture1->Draw();
+	for (Texture* TexRef: m_TextureStack) {
+		if (TexRef != nullptr) {
+			TexRef->Draw();
+		}
 	}
+
 	//Present graphics to renderer
 	SDL_RenderPresent(m_RendererRef);
 }
