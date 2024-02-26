@@ -6,6 +6,7 @@
 struct SDL_Window;
 struct SDL_Renderer;
 class Texture;
+class Input;
 
 //DEBUG
 class Animation;
@@ -41,17 +42,13 @@ private:
 	// gsjfg
 	TArray<Texture*> m_TextureStack;
 
+	//Store the input handler for the game
+	Input* m_GameInput;
+
 	//Debug Testing Vars
 	Animation* m_TestAnim1;
-	Animation* m_TestAnim2;
-	Animation* m_TestAnim3;
-	Animation* m_TestAnim4;
-	Animation* m_TestAnim5;
-	Animation* m_TestAnim6;
-	Animation* m_TestAnim7;
-	Animation* m_TestAnim8;
-	Animation* m_TestAnim9;
-	Animation* m_TestAnim10;
+
+
 	// Core Game Funcs
 	// init dependencies / libs, exit game on fail
 	void Initialise();

@@ -2,9 +2,11 @@
 #include "SDL2/SDL.h"
 #include "Debug.h"
 #include "Graphics/Texture.h"
+#include "Input.h"
 
 //DEBUG
 #include "Graphics/Animation.h"
+#include "Math/Vector2.h"
 
 Game* Game::GetGame()
 {
@@ -95,15 +97,6 @@ Game::Game()
 
 	//Debug Vars
 	m_TestAnim1 = nullptr;
-	m_TestAnim2 = nullptr;
-	m_TestAnim3 = nullptr;
-	m_TestAnim4 = nullptr;
-	m_TestAnim5 = nullptr;
-	m_TestAnim6 = nullptr;
-	m_TestAnim7 = nullptr;
-	m_TestAnim8 = nullptr;
-	m_TestAnim9 = nullptr;
-	m_TestAnim10 = nullptr;
 }
 
 Game::~Game()
@@ -154,80 +147,15 @@ void Game::Start()
 		return;
 	}
 
+	//create the game input
+	m_GameInput = new Input();
+
 	//Debug
 	AnimationParams SheildAnimParams(24, 12, 11, 64, 64);
-	AnimationParams EngineAnimParams(24, 4, 3, 48, 48);
-	AnimationParams AutoCannonAnimParams(24, 7, 6, 48, 48);
-	AnimationParams AutoCannonProjectileAnimParams(24, 4, 3, 32, 32);
-	AnimationParams BigSpaceGunAnimParams(24, 12, 11, 48, 48);
-	AnimationParams BigSpaceGunProjectileAnimParams(24, 10, 9, 32, 32);
-
 
 	m_TestAnim1 = new Animation();
-	m_TestAnim1->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Bases/PNGs/Main Ship - Base - Full health.png");
-
-	m_TestAnim1->SetPosition(640.0f, 360.0f);
-	m_TestAnim1->SetScale(1.25f);
-
-	m_TestAnim2 = new Animation();
-	m_TestAnim2->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Engines/PNGs/Main Ship - Engines - Big Pulse Engine.png");
-
-	m_TestAnim2->SetPosition(640.0f, 370.0f);
-
-	m_TestAnim3 = new Animation();
-	m_TestAnim3->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Auto Cannon.png",
-		&AutoCannonAnimParams);
-
-	m_TestAnim3->SetPosition(640.0f, 350.0f);
-	m_TestAnim3->SetScale(1.25f);
-
-	m_TestAnim4 = new Animation();
-	m_TestAnim4->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
-		&BigSpaceGunAnimParams);
-
-	m_TestAnim4->SetPosition(600.0f, 370.0f);
-	m_TestAnim4->SetScale(1.25f);
-
-	m_TestAnim5 = new Animation();
-	m_TestAnim5->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Weapons/PNGs/Main Ship - Weapons - Big Space Gun.png",
-		&BigSpaceGunAnimParams);
-
-	m_TestAnim5->SetPosition(680.0f, 370.0f);
-	m_TestAnim5->SetScale(1.25f);
-
-	m_TestAnim6 = new Animation();
-	m_TestAnim6->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png",
-		&BigSpaceGunProjectileAnimParams);
-
-	m_TestAnim6->SetPosition(680.0f, 330.0f);
-	m_TestAnim6->SetScale(1.25f);
-
-	m_TestAnim7 = new Animation();
-	m_TestAnim7->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Big Space Gun.png",
-		&BigSpaceGunProjectileAnimParams);
-
-	m_TestAnim7->SetPosition(600.0f, 330.0f);
-	m_TestAnim7->SetScale(1.25f);
-
-	m_TestAnim8 = new Animation();
-	m_TestAnim8->CreateAnimation("Content/Sprites/Main ship weapons/PNGs/Main ship weapon - Projectile - Auto cannon bullet.png",
-		&AutoCannonProjectileAnimParams);
-
-	m_TestAnim8->SetPosition(640.0f, 300.0f);
-	m_TestAnim8->SetScale(1.25f);
-
-	m_TestAnim9 = new Animation();
-	m_TestAnim9->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Shields/PNGs/Main Ship - Shields - Round Shield.png",
+	m_TestAnim1->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Shields/PNGs/Main Ship - Shields - Round Shield.png",
 		&SheildAnimParams);
-
-	m_TestAnim9->SetPosition(640.0f, 360.0f);
-
-	m_TestAnim10 = new Animation();
-	m_TestAnim10->CreateAnimation("Content/Sprites/Main Ship/Main Ship - Engine Effects/PNGs/Main Ship - Engines - Big Pulse Engine - Powering.png",
-		&EngineAnimParams);
-
-	m_TestAnim10->SetPosition(640.0f, 370.0f);
-
 
 	GameLoop();
 }
@@ -271,16 +199,7 @@ void Game::CleanUp()
 
 void Game::ProcessInput()
 {
-	//data type to read STL input events for the window
-	SDL_Event InputEvent;
-
-	//run through each input in the frame
-	while (SDL_PollEvent(&InputEvent)) {
-		//when x is pressed close the app
-		if (InputEvent.type == SDL_QUIT) {
-			QuitApp();
-		}
-	}
+	m_GameInput->ProcessInput();
 }
 
 void Game::Update()
@@ -296,47 +215,36 @@ void Game::Update()
 	//set the last tick time
 	LastTickTime = CurrentTickTime;
 
-	static float i = 0.0f;
-	i += 0.1f;
+	//DEBUG
+	//pos of animation on screen
+	static Vector2 Position(640.0f, 360.0f);
+	float Speed = 100.0f * (float) DeltaTime;
+	//direction to move in
+	Vector2 MovementDirection(0.0f);
+
+	if (m_GameInput->IsKeyDown(GL_KEY_W)) {
+		MovementDirection.y += -1.0f;
+	}
+	if (m_GameInput->IsKeyDown(GL_KEY_S)) {
+		MovementDirection.y += 1.0f;
+	}
+	if (m_GameInput->IsKeyDown(GL_KEY_A)) {
+		MovementDirection.x += -1.0f;
+	}
+	if (m_GameInput->IsKeyDown(GL_KEY_D)) {
+		MovementDirection.x += 1.0f;
+	}
+
+	if (m_GameInput->IsKeyDown(GL_KEY_LSHIFT)) {
+		Speed = 200.0f * (float) DeltaTime;
+	}
+
+	Position += MovementDirection * Speed;
 
 	//TODO: update game logic
 	if (m_TestAnim1 != nullptr) {
-		m_TestAnim1->SetPosition(640, 360 - i);
-	}
-	if (m_TestAnim2 != nullptr) {
-		m_TestAnim2->SetPosition(640, 370 - i);
-	}
-	if (m_TestAnim3 != nullptr) {
-		m_TestAnim3->Update((float)DeltaTime);
-		m_TestAnim3->SetPosition(640, 350 - i);
-	}
-	if (m_TestAnim4 != nullptr) {
-		m_TestAnim4->Update((float)DeltaTime);
-		m_TestAnim4->SetPosition(600, 370 - i);
-	}
-	if (m_TestAnim5 != nullptr) {
-		m_TestAnim5->Update((float)DeltaTime);
-		m_TestAnim5->SetPosition(680, 370 - i);
-	}
-	if (m_TestAnim6 != nullptr) {
-		m_TestAnim6->Update((float)DeltaTime);
-		m_TestAnim6->SetPosition(680, 330 - 5 * i);
-	}
-	if (m_TestAnim7 != nullptr) {
-		m_TestAnim7->Update((float)DeltaTime);
-		m_TestAnim7->SetPosition(600, 330 - 5 * i);
-	}
-	if (m_TestAnim8 != nullptr) {
-		m_TestAnim8->Update((float)DeltaTime);
-		m_TestAnim8->SetPosition(640, 300 - 5 * i);
-	}
-	if (m_TestAnim9 != nullptr) {
-		m_TestAnim9->Update((float)DeltaTime);
-		m_TestAnim9->SetPosition(640, 360 - i);
-	}
-	if (m_TestAnim10 != nullptr) {
-		m_TestAnim10->Update((float)DeltaTime);
-		m_TestAnim10->SetPosition(640, 370 - i);
+		m_TestAnim1->SetPosition(Position.x, Position.y);
+		m_TestAnim1->Update((float)DeltaTime);
 	}
 }
 
