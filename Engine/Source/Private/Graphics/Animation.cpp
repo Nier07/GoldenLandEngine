@@ -33,7 +33,13 @@ bool Animation::CreateAnimation(const char* PathToFile, AnimationParams* Params)
 	}
 
 	//set params
-	m_AnimParams = Params;
+	m_AnimParams = new AnimationParams();
+	m_AnimParams->EndFrame = Params->EndFrame;
+	m_AnimParams->fps = Params->fps;
+	m_AnimParams->FrameHeight = Params->FrameHeight;
+	m_AnimParams->FrameWidth = Params->FrameWidth;
+	m_AnimParams->MaxFrames = Params->MaxFrames;
+	m_AnimParams->StartFrame = Params->StartFrame;
 
 	//if animation params were set
 	if (m_AnimParams != nullptr) {
@@ -101,11 +107,12 @@ void Animation::SetRotation(float Angle)
 	m_TextureRef->m_Angle = Angle;
 }
 
-void Animation::SetScale(float Scale)
+void Animation::SetScale(float x, float y)
 {
 	if (m_TextureRef == nullptr) {
 		return;
 	}
 
-	m_TextureRef->m_Scale = Scale;
+	m_TextureRef->m_ScaleX = x;
+	m_TextureRef->m_ScaleY = y;
 }

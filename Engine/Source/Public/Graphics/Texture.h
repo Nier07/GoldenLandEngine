@@ -33,7 +33,8 @@ public:
 	// rotation of image
 	float m_Angle;
 
-	float m_Scale;
+	//scale the texture
+	float m_ScaleX, m_ScaleY;
 
 private:
 	// texture that SDL understands

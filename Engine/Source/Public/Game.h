@@ -7,6 +7,7 @@ struct SDL_Window;
 struct SDL_Renderer;
 class Texture;
 class Input;
+class GameObject;
 
 //DEBUG
 class Animation;
@@ -28,6 +29,10 @@ public:
 	// Safe destory texture
 	void DestroyTexture(Texture* TextureToDestroy);
 
+	// add a game object to the game
+	template<typename T>
+	T* AddGameObject();
+
 private:
 	Game();
 	~Game();
@@ -39,14 +44,22 @@ private:
 	SDL_Window* m_WindowRef;
 	SDL_Renderer* m_RendererRef;
 
-	// gsjfg
+	// stores all textures in the game
 	TArray<Texture*> m_TextureStack;
+
+	// stores all game objects in the game
+	TArray<GameObject*> m_GameObjectStack;
+
+	//store all game objects that need to be spawned on the next loop
+	TArray<GameObject*> m_GameObjectPendingSpawn;
 
 	//Store the input handler for the game
 	Input* m_GameInput;
 
 	//Debug Testing Vars
 	Animation* m_TestAnim1;
+
+	GameObject* m_TestObject;
 
 
 	// Core Game Funcs
@@ -63,6 +76,9 @@ private:
 	void CleanUp();
 
 	// Game Loop
+	// checks if any objects need to be spawned
+	void PreLoop();
+
 	// looks for user input and process
 	void ProcessInput();
 

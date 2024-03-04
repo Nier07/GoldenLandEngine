@@ -47,7 +47,7 @@ public:
 
 	void SetRotation(float Angle);
 
-	void SetScale(float Scale);
+	void SetScale(float x, float y);
 
 private:
 	// stores the texture to render

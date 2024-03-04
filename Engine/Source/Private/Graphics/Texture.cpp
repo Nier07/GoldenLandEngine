@@ -11,7 +11,7 @@ Texture::Texture(SDL_Renderer* Renderer)
 	m_PosX = m_PosY = 0;
 	m_SurfaceData = nullptr;
 	m_TextureRef = nullptr;
-	m_Scale = 1.0f;
+	m_ScaleX = m_ScaleY = 1.0f;
 	m_ClipRect = nullptr;
 }
 
@@ -66,13 +66,13 @@ void Texture::Draw()
 
 	SDL_FRect DestRect = {
 		(float)m_PosX, (float)m_PosY,
-		ImageWidth * m_Scale, ImageHeight * m_Scale
+		ImageWidth * m_ScaleX, ImageHeight * m_ScaleY
 	};
 
 	//if there is a set clip then update the w and h of texture
 	if (m_ClipRect != nullptr) {
-		DestRect.w = m_ClipRect->w * m_Scale;
-		DestRect.h = m_ClipRect->h * m_Scale;
+		DestRect.w = m_ClipRect->w * m_ScaleX;
+		DestRect.h = m_ClipRect->h * m_ScaleY;
 	}
 
 	// move texture to be centered at middle point of image
